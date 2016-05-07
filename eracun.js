@@ -209,23 +209,30 @@ streznik.post('/prijava', function(zahteva, odgovor) {
     	  Phone, Fax, Email, SupportRepId) \
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
       //TODO: add fields and finalize
-        var name = document.getElementById("FirstName");
-        var lastname = document.getElementById("LastName");
-        var mail = document.getElementById("Mail");
-        console.log(name, lastname, mail);
-        stmt.run(form.elements["FirstName"].value,form.elements["LastName"].value,form.elements["LastName"].value,form.elements["LastName"].value,form.elements["LastName"].value,
-        form.elements["LastName"].value,form.elements["LastName"].value,form.elements["LastName"].value,form.elements["LastName"].value,form.elements["LastName"].value,
-        form.elements["Email"].value,3);
-    //  stmt.run("input#FirstName.form-control", "#LastName.value", "#Company.value", "#Address.value",
-    //    "#City.value", "#State.value", "#Country.value", "#PostalCode.value", "#Phone.value",
-    //    "#Fax.value", "#Email.value", 3);
+        stmt.run(polja.FirstName, polja.LastName, polja.Company, polja.Address,
+        polja.City, polja.State, polja.Country, polja.PostalCode, polja.Phone,
+        polja.Fax, polja.Email, 3);
         stmt.finalize();
-      
+        
+           
     } catch (err) {
       napaka2 = true;
     }
-  
-    odgovor.end();
+      if(napaka2) {
+          vrniStranke(function(napaka1, stranke) {
+            vrniRacune(function(napaka2, racuni) {
+            odgovor.render('prijava', {sporocilo: "Prišlo je do napake pri registraciji nove stranke. Prosim preverite vnešene podatke in poskusite znova.", seznamStrank: stranke, seznamRacunov: racuni});  
+      }) 
+    });
+      } else {
+         vrniStranke(function(napaka1, stranke) {
+          vrniRacune(function(napaka2, racuni) {
+            odgovor.render('prijava', {sporocilo: "Stranka je bila uspešno registrirana.", seznamStrank: stranke, seznamRacunov: racuni});  
+        }) 
+      });
+      }
+        
+   //odgovor.end();
   });
 })
 
