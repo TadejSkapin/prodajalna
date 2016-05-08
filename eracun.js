@@ -26,7 +26,7 @@ streznik.use(
   })
 );
 
-
+var uporabnikID;
 var uporabnik;
 //uporabnik.id = null;
 
@@ -169,6 +169,16 @@ var strankaIzRacuna = function(racunId, callback) {
     })
 }
 
+// Vrni podrobnosti o stranki iz baze
+var strankaIzBaze = function(IDU, callback) {
+    pb.all("SELECT Customer.* FROM Customer \
+            WHERE Customer.CustomerId = " + IDU,
+    function(napaka, vrstice) {
+      callback(vrstice);
+     // console.log(vrstice);
+    })
+}
+
 // Izpis računa v HTML predstavitvi na podlagi podatkov iz baze
 streznik.post('/izpisiRacunBaza', function(zahteva, odgovor) {
   var form = new formidable.IncomingForm();
@@ -195,19 +205,23 @@ streznik.post('/izpisiRacunBaza', function(zahteva, odgovor) {
 
 // Izpis računa v HTML predstavitvi ali izvorni XML obliki
 streznik.get('/izpisiRacun/:oblika', function(zahteva, odgovor) {
-  pesmiIzKosarice(zahteva, function(pesmi) {
-    if (!pesmi) {
-      odgovor.sendStatus(500);
-    } else if (pesmi.length == 0) {
-      odgovor.send("<p>V košarici nimate nobene pesmi, \
-        zato računa ni mogoče pripraviti!</p>");
-    } else {
-      odgovor.setHeader('content-type', 'text/xml');
-      odgovor.render('eslog', {
-        vizualiziraj: zahteva.params.oblika == 'html' ? true : false,
-        postavkeRacuna: pesmi
-      })  
-    }
+      strankaIzBaze(uporabnikID, function(podatki)
+    {
+      pesmiIzKosarice(zahteva, function(pesmi) {
+        if (!pesmi) {
+          odgovor.sendStatus(500);
+        } else if (pesmi.length == 0) {
+          odgovor.send("<p>V košarici nimate nobene pesmi, \
+            zato računa ni mogoče pripraviti!</p>");
+        } else {
+          odgovor.setHeader('content-type', 'text/xml');
+          odgovor.render('eslog', {
+            vizualiziraj: zahteva.params.oblika == 'html' ? true : false,
+            postavkeRacuna: pesmi,
+            podatkiStranka: podatki
+          })  
+        }
+      })
   })
 })
 
@@ -279,6 +293,7 @@ streznik.post('/stranka', function(zahteva, odgovor) {
     uporabnik = zahteva.session;
     uporabnik.id = polja.seznamStrank;
     prijavljen = 1;
+    uporabnikID = polja.seznamStrank;
     odgovor.redirect('/')
   });
 })
