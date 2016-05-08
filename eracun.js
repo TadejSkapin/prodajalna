@@ -148,7 +148,20 @@ var strankaIzRacuna = function(racunId, callback) {
 
 // Izpis računa v HTML predstavitvi na podlagi podatkov iz baze
 streznik.post('/izpisiRacunBaza', function(zahteva, odgovor) {
-  odgovor.end();
+  pesmiIzRacuna(400, function(pesmi) {
+    if (!pesmi) {
+      odgovor.sendStatus(500);
+    } else if (pesmi.length == 0) {
+      odgovor.send("<p>V košarici nimate nobene pesmi, \
+        zato računa ni mogoče pripraviti!</p>");
+    } else {
+      odgovor.setHeader('content-type', 'text/xml');
+      odgovor.render('eslog', {
+        vizualiziraj: zahteva.params.oblika == 'html' ? true : false,
+        postavkeRacuna: pesmi
+      })  
+    }
+  })
 })
 
 // Izpis računa v HTML predstavitvi ali izvorni XML obliki
