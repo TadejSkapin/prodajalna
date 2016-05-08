@@ -242,6 +242,7 @@ streznik.post('/stranka', function(zahteva, odgovor) {
   form.parse(zahteva, function (napaka1, polja, datoteke) {
     console.log(polja.seznamStrank);
     prijavljen = 1;
+    odgovor.redirect('/')
   });
 })
 
